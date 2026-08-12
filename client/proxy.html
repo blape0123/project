@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL 우회 프록시</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      min-height: 100vh;
+    }
+
+    /* 사이드바 */
+    .sidebar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 30px 20px;
+      color: white;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    .sidebar h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 30px;
+    }
+
+    .section {
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: white;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .btn-primary:hover {
+      background: #f0f0f0;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .url-list {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .url-item {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 1px solid transparent;
+    }
+
+    .url-item:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: white;
+    }
+
+    .url-item.active {
+      background: white;
+      color: #667eea;
+      border-color: white;
+    }
+
+    .url-item-name {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .url-item-url {
+      font-size: 11px;
+      opacity: 0.8;
+      word-break: break-all;
+      margin-bottom: 6px;
+    }
+
+    .url-item-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .url-item-btn {
+      flex: 1;
+      padding: 6px 8px;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .url-item-btn-visit {
+      background: #4caf50;
+      color: white;
+    }
+
+    .url-item-btn-visit:hover {
+      background: #45a049;
+    }
+
+    .url-item-btn-delete {
+      background: #ff6b6b;
+      color: white;
+    }
+
+    .url-item-btn-delete:hover {
+      background: #ff5252;
+    }
+
+    .empty-list {
+      text-align: center;
+      padding: 30px 20px;
+      opacity: 0.6;
+      font-size: 13px;
+    }
+
+    /* 메인 콘텐츠 */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      background: white;
+      padding: 20px 30px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .top-bar-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .top-bar-url {
+      font-size: 13px;
+      color: #666;
+      background: #f5f5f5;
+      padding: 8px 12px;
+      border-radius: 4px;
+      max-width: 500px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .control-btn {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .control-btn:hover {
+      background: #f0f0f0;
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .browser-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .address-bar {
+      background: white;
+      padding: 15px 30px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .address-input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .address-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .nav-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .content-frame {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      background: white;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .loading-spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .spinner {
+      border: 4px solid #f0f0f0;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #999;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .welcome-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .welcome-text {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .welcome-hint {
+      font-size: 14px;
+      text-align: center;
+      max-width: 300px;
+    }
+
+    .alert {
+      padding: 12px 20px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        max-height: auto;
+        padding: 20px;
+      }
+
+      .top-bar {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .address-bar {
+        flex-direction: column;
+        padding: 10px 20px;
+      }
+
+      .address-input {
+        width: 100%;
+      }
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 사이드바 -->
+    <div class="sidebar">
+      <h1>🌐 프록시</h1>
+      <div class="sidebar-subtitle">URL 우회 브라우저</div>
+
+      <div id="alert-sidebar" class="alert"></div>
+
+      <div class="section">
+        <div class="section-title">새 URL 등록</div>
+        <div class="form-group">
+          <label for="url-name">이름</label>
+          <input type="text" id="url-name" placeholder="예: 유튜브">
+        </div>
+        <div class="form-group">
+          <label for="url-link">URL</label>
+          <input type="text" id="url-link" placeholder="https://youtube.com">
+        </div>
+        <button class="btn btn-primary" onclick="registerUrl()">➕ 등록하기</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">등록된 사이트</div>
+        <div id="url-list-container" class="url-list">
+          <div class="empty-list">등록된 사이트가 없습니다.</div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value" id="total-urls">0</div>
+          <div class="stat-label">등록된 사이트</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="visits-count">0</div>
+          <div class="stat-label">방문 횟수</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="main-content">
+      <div class="top-bar">
+        <div>
+          <div class="top-bar-title" id="current-title">URL 우회 브라우저</div>
+          <div class="top-bar-url" id="current-url"></div>
+        </div>
+        <div class="controls">
+          <button class="control-btn" onclick="clearCache()">🧹 캐시 지우기</button>
+          <button class="control-btn" onclick="openExternal()">🔗 외부에서 열기</button>
+        </div>
+      </div>
+
+      <div class="address-bar">
+        <div class="nav-buttons">
+          <button class="nav-btn" id="back-btn" onclick="goBack()" disabled>⬅️ 뒤로</button>
+          <button class="nav-btn" id="forward-btn" onclick="goForward()" disabled>➡️ 앞으로</button>
+          <button class="nav-btn" onclick="reload()">🔄 새로고침</button>
+        </div>
+        <input type="text" class="address-input" id="address-input" placeholder="URL을 입력하세요" onkeypress="handleAddressKeypress(event)">
+        <button class="nav-btn" onclick="navigateToAddress()">🚀 이동</button>
+      </div>
+
+      <div class="browser-area">
+        <div id="welcome-screen" class="welcome-screen">
+          <div class="welcome-icon">🌐</div>
+          <div class="welcome-text">URL 우회 브라우저</div>
+          <div class="welcome-hint">
+            왼쪽 사이드바에서 URL을 등록하고 방문하세요.<br>
+            또는 위의 주소창에 직접 URL을 입력하세요.
+          </div>
+        </div>
+        <div id="content-frame" class="content-frame" style="display: none;">
+          <iframe id="proxy-iframe"></iframe>
+          <div id="loading-spinner" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+            <div>로딩 중...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'proxy_urls';
+    const VISITS_KEY = 'proxy_visits';
+    let urls = [];
+    let visits = 0;
+    let currentUrl = null;
+    let history = [];
+    let historyIndex = -1;
+
+    // 초기화
+    function init() {
+      loadUrls();
+      loadVisits();
+      renderUrlList();
+      updateStats();
+    }
+
+    // URL 목록 로드
+    function loadUrls() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      urls = data ? JSON.parse(data) : [];
+    }
+
+    // 방문 횟수 로드
+    function loadVisits() {
+      visits = parseInt(localStorage.getItem(VISITS_KEY) || '0');
+    }
+
+    // URL 목록 저장
+    function saveUrls() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(urls));
+    }
+
+    // 방문 횟수 저장
+    function saveVisits() {
+      localStorage.setItem(VISITS_KEY, visits.toString());
+    }
+
+    // URL 유효성 검사
+    function isValidUrl(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    // URL 등록
+    function registerUrl() {
+      const name = document.getElementById('url-name').value.trim();
+      const url = document.getElementById('url-link').value.trim();
+
+      if (!name) {
+        showAlert('사이트 이름을 입력하세요.', 'error', 'alert-sidebar');
+        return;
+      }
+
+      if (!url) {
+        showAlert('URL을 입력하세요.', 'error', 'alert-sidebar');
+        return;
+      }
+
+      let fullUrl = url;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        fullUrl = 'https://' + url;
+      }
+
+      if (!isValidUrl(fullUrl)) {
+        showAlert('유효한 URL을 입력하세요.', 'error', 'alert-sidebar');
+        return;
+      }
+
+      urls.push({
+        id: Date.now(),
+        name,
+        url: fullUrl
+      });
+
+      saveUrls();
+      document.getElementById('url-name').value = '';
+      document.getElementById('url-link').value = '';
+      renderUrlList();
+      updateStats();
+      showAlert('사이트가 등록되었습니다.', 'success', 'alert-sidebar');
+    }
+
+    // URL 목록 렌더링
+    function renderUrlList() {
+      const container = document.getElementById('url-list-container');
+
+      if (urls.length === 0) {
+        container.innerHTML = '<div class="empty-list">등록된 사이트가 없습니다.</div>';
+        return;
+      }
+
+      container.innerHTML = urls.map(url => `
+        <div class="url-item ${currentUrl === url.url ? 'active' : ''}">
+          <div class="url-item-name">${escapeHtml(url.name)}</div>
+          <div class="url-item-url">${escapeHtml(url.url)}</div>
+          <div class="url-item-actions">
+            <button class="url-item-btn url-item-btn-visit" onclick="visitUrl('${escapeHtml(url.url)}')">방문</button>
+            <button class="url-item-btn url-item-btn-delete" onclick="deleteUrl(${url.id})">삭제</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // URL 방문
+    function visitUrl(url) {
+      navigateTo(url);
+    }
+
+    // URL 삭제
+    function deleteUrl(id) {
+      if (confirm('이 사이트를 삭제하시겠습니까?')) {
+        urls = urls.filter(u => u.id !== id);
+        saveUrls();
+        renderUrlList();
+        updateStats();
+        showAlert('사이트가 삭제되었습니다.', 'success', 'alert-sidebar');
+      }
+    }
+
+    // 페이지 이동
+    function navigateTo(url) {
+      if (!url) return;
+
+      let fullUrl = url;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        fullUrl = 'https://' + url;
+      }
+
+      if (!isValidUrl(fullUrl)) {
+        showAlert('유효한 URL을 입력하세요.', 'error');
+        return;
+      }
+
+      // 프록시를 통해 요청
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
+
+      showLoading(true);
+      currentUrl = fullUrl;
+      visits++;
+      saveVisits();
+      updateStats();
+      renderUrlList();
+
+      document.getElementById('welcome-screen').style.display = 'none';
+      document.getElementById('content-frame').style.display = 'flex';
+      document.getElementById('current-title').textContent = '페이지 로드 중...';
+      document.getElementById('current-url').textContent = fullUrl;
+      document.getElementById('address-input').value = fullUrl;
+
+      // 이력에 추가
+      history.push(fullUrl);
+      historyIndex = history.length - 1;
+      updateNavButtons();
+
+      // iframe으로 로드
+      const iframe = document.getElementById('proxy-iframe');
+      iframe.src = proxyUrl;
+      iframe.onload = function() {
+        showLoading(false);
+        try {
+          document.getElementById('current-title').textContent = iframe.contentDocument?.title || '페이지';
+        } catch (e) {
+          document.getElementById('current-title').textContent = '페이지';
+        }
+      };
+      iframe.onerror = function() {
+        showLoading(false);
+        showAlert('페이지를 로드할 수 없습니다.', 'error');
+      };
+    }
+
+    // 주소창 입력 처리
+    function handleAddressKeypress(e) {
+      if (e.key === 'Enter') {
+        navigateToAddress();
+      }
+    }
+
+    // 주소창의 URL로 이동
+    function navigateToAddress() {
+      const url = document.getElementById('address-input').value.trim();
+      if (url) {
+        navigateTo(url);
+      }
+    }
+
+    // 로딩 표시
+    function showLoading(show) {
+      document.getElementById('loading-spinner').style.display = show ? 'block' : 'none';
+    }
+
+    // 뒤로 가기
+    function goBack() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        navigateTo(history[historyIndex]);
+      }
+    }
+
+    // 앞으로 가기
+    function goForward() {
+      if (historyIndex < history.length - 1) {
+        historyIndex++;
+        navigateTo(history[historyIndex]);
+      }
+    }
+
+    // 새로고침
+    function reload() {
+      if (currentUrl) {
+        document.getElementById('proxy-iframe').src = `/api/proxy?url=${encodeURIComponent(currentUrl)}`;
+        showLoading(true);
+      }
+    }
+
+    // 네비게이션 버튼 업데이트
+    function updateNavButtons() {
+      document.getElementById('back-btn').disabled = historyIndex <= 0;
+      document.getElementById('forward-btn').disabled = historyIndex >= history.length - 1;
+    }
+
+    // 캐시 지우기
+    function clearCache() {
+      if (confirm('정말 캐시를 지우시겠습니까?')) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    // 외부에서 열기
+    function openExternal() {
+      if (currentUrl) {
+        window.open(currentUrl, '_blank');
+      }
+    }
+
+    // 통계 업데이트
+    function updateStats() {
+      document.getElementById('total-urls').textContent = urls.length;
+      document.getElementById('visits-count').textContent = visits;
+    }
+
+    // 알림 표시
+    function showAlert(message, type, containerId = 'alert-top') {
+      const alertId = containerId === 'alert-sidebar' ? 'alert-sidebar' : 'alert-top';
+      const container = document.getElementById(alertId);
+      
+      if (!container) {
+        const newAlert = document.createElement('div');
+        newAlert.id = alertId;
+        newAlert.className = `alert alert-${type} show`;
+        newAlert.textContent = message;
+        document.querySelector('.top-bar')?.appendChild(newAlert);
+      } else {
+        container.className = `alert alert-${type} show`;
+        container.textContent = message;
+      }
+
+      setTimeout(() => {
+        container.classList.remove('show');
+      }, 3000);
+    }
+
+    // HTML 이스케이프
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 페이지 로드 시 초기화
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>

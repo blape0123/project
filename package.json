@@ -1,0 +1,12 @@
+{
+  "name": "proxy-test",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "target": "node target/server.js",
+    "proxy": "node proxy/server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
