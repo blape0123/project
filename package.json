@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "target": "node target/server.js",
-    "proxy": "node proxy/server.js"
+    "proxy": "node proxy/server.js --open"
   },
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "open": "^11.0.0"
   }
 }

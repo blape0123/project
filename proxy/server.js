@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const url = require("url");
+const open = require("open");
 
 const app = express();
 const PORT = 3001;
@@ -172,5 +173,16 @@ app.all(/^\/proxy\/([^\/]+)(.*)$/, async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🌐 Proxy server: http://localhost:${PORT}`);
-  console.log(`📖 URL 우회 프록시: http://localhost:${PORT}/proxy.html`);
+  console.log(`📖 URL 우회 프록시: http://localhost:${PORT}`);
+  
+  // 명령어 인자에 --open이 있으면 브라우저 자동 실행
+  if (process.argv.includes('--open')) {
+    setTimeout(async () => {
+      try {
+        await open(`http://localhost:${PORT}`);
+      } catch (err) {
+        console.log('브라우저를 자동으로 열 수 없습니다. 수동으로 브라우저를 열어주세요.');
+      }
+    }, 500);
+  }
 });

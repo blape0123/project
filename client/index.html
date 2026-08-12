@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>URL 우회 프록시</title>
+  <title>URL 우회 - 링크 브라우저</title>
   <style>
     * {
       margin: 0;
@@ -219,6 +219,14 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .top-bar-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .top-bar-title {
@@ -242,6 +250,7 @@
     .controls {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .control-btn {
@@ -275,10 +284,12 @@
       display: flex;
       gap: 10px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .address-input {
       flex: 1;
+      min-width: 200px;
       padding: 10px 16px;
       border: 1px solid #ddd;
       border-radius: 6px;
@@ -358,9 +369,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100%;
+      min-height: 100%;
       color: #999;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      text-align: center;
     }
 
     .welcome-icon {
@@ -377,7 +388,8 @@
     .welcome-hint {
       font-size: 14px;
       text-align: center;
-      max-width: 300px;
+      max-width: 400px;
+      line-height: 1.6;
     }
 
     .alert {
@@ -387,6 +399,11 @@
       font-size: 13px;
       display: none;
       animation: slideIn 0.3s ease;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      max-width: 400px;
     }
 
     .alert.show {
@@ -416,19 +433,125 @@
       }
     }
 
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .info-box {
+      background: #e8f4f8;
+      border: 1px solid #b0d9e8;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 30px;
+      color: #0c5460;
+    }
+
+    .info-box h3 {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .info-box p {
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .link-item-content {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .link-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .link-item-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .link-item-url {
+      font-size: 13px;
+      color: #666;
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      word-break: break-all;
+      margin-bottom: 15px;
+      border-left: 4px solid #667eea;
+    }
+
+    .link-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .link-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .link-btn-open {
+      background: #667eea;
+      color: white;
+    }
+
+    .link-btn-open:hover {
+      background: #5568d3;
+    }
+
+    .link-btn-copy {
+      background: #4caf50;
+      color: white;
+    }
+
+    .link-btn-copy:hover {
+      background: #45a049;
+    }
+
+    .link-btn-back {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .link-btn-back:hover {
+      background: #e0e0e0;
+    }
+
+    .content-area {
+      flex: 1;
+      overflow: auto;
+      padding: 30px;
+      background: white;
+    }
+
     @media (max-width: 768px) {
       .container {
         grid-template-columns: 1fr;
       }
 
       .sidebar {
-        max-height: auto;
-        padding: 20px;
+        max-height: 50vh;
       }
 
       .top-bar {
         flex-direction: column;
-        gap: 10px;
+        align-items: flex-start;
       }
 
       .address-bar {
@@ -438,6 +561,14 @@
 
       .address-input {
         width: 100%;
+      }
+
+      .controls {
+        width: 100%;
+      }
+
+      .control-btn {
+        flex: 1;
       }
     }
 
@@ -473,13 +604,13 @@
   <div class="container">
     <!-- 사이드바 -->
     <div class="sidebar">
-      <h1>🌐 프록시</h1>
-      <div class="sidebar-subtitle">URL 우회 브라우저</div>
+      <h1>🔗 링크 관리</h1>
+      <div class="sidebar-subtitle">URL 우회 링크 브라우저</div>
 
       <div id="alert-sidebar" class="alert"></div>
 
       <div class="section">
-        <div class="section-title">새 URL 등록</div>
+        <div class="section-title">새 링크 등록</div>
         <div class="form-group">
           <label for="url-name">이름</label>
           <input type="text" id="url-name" placeholder="예: 유튜브">
@@ -492,16 +623,16 @@
       </div>
 
       <div class="section">
-        <div class="section-title">등록된 사이트</div>
+        <div class="section-title">등록된 링크</div>
         <div id="url-list-container" class="url-list">
-          <div class="empty-list">등록된 사이트가 없습니다.</div>
+          <div class="empty-list">등록된 링크가 없습니다.</div>
         </div>
       </div>
 
       <div class="stats">
         <div class="stat-item">
           <div class="stat-value" id="total-urls">0</div>
-          <div class="stat-label">등록된 사이트</div>
+          <div class="stat-label">등록된 링크</div>
         </div>
         <div class="stat-item">
           <div class="stat-value" id="visits-count">0</div>
@@ -513,40 +644,41 @@
     <!-- 메인 콘텐츠 -->
     <div class="main-content">
       <div class="top-bar">
-        <div>
-          <div class="top-bar-title" id="current-title">URL 우회 브라우저</div>
-          <div class="top-bar-url" id="current-url"></div>
+        <div class="top-bar-left">
+          <div class="top-bar-title" id="current-title">링크 관리 시스템</div>
+          <div class="top-bar-url" id="current-url" style="display: none;"></div>
         </div>
         <div class="controls">
           <button class="control-btn" onclick="clearCache()">🧹 캐시 지우기</button>
-          <button class="control-btn" onclick="openExternal()">🔗 외부에서 열기</button>
+          <button class="control-btn" onclick="showSettings()">⚙️ 설정</button>
         </div>
       </div>
 
       <div class="address-bar">
         <div class="nav-buttons">
           <button class="nav-btn" id="back-btn" onclick="goBack()" disabled>⬅️ 뒤로</button>
-          <button class="nav-btn" id="forward-btn" onclick="goForward()" disabled>➡️ 앞으로</button>
-          <button class="nav-btn" onclick="reload()">🔄 새로고침</button>
+          <button class="nav-btn" onclick="goHome()">🏠 홈</button>
         </div>
-        <input type="text" class="address-input" id="address-input" placeholder="URL을 입력하세요" onkeypress="handleAddressKeypress(event)">
-        <button class="nav-btn" onclick="navigateToAddress()">🚀 이동</button>
+        <input type="text" class="address-input" id="address-input" placeholder="링크 이름으로 검색하거나 URL을 입력하세요" onkeypress="handleAddressKeypress(event)">
+        <button class="nav-btn" onclick="navigateToAddress()">🔍 검색</button>
       </div>
 
       <div class="browser-area">
-        <div id="welcome-screen" class="welcome-screen">
-          <div class="welcome-icon">🌐</div>
-          <div class="welcome-text">URL 우회 브라우저</div>
-          <div class="welcome-hint">
-            왼쪽 사이드바에서 URL을 등록하고 방문하세요.<br>
-            또는 위의 주소창에 직접 URL을 입력하세요.
-          </div>
-        </div>
-        <div id="content-frame" class="content-frame" style="display: none;">
-          <iframe id="proxy-iframe"></iframe>
-          <div id="loading-spinner" class="loading-spinner" style="display: none;">
-            <div class="spinner"></div>
-            <div>로딩 중...</div>
+        <div id="content-area" class="content-area">
+          <div id="welcome-screen" class="welcome-screen">
+            <div class="welcome-icon">🔗</div>
+            <div class="welcome-text">링크 우회 브라우저</div>
+            <div class="welcome-hint">
+              왼쪽 사이드바에서 링크를 등록하고 관리하세요.<br>
+              등록된 링크를 클릭하면 새 탭에서 사이트가 열립니다.
+            </div>
+            <div class="info-box">
+              <h3>📌 사용 방법</h3>
+              <p>✓ 링크 이름과 URL을 입력하고 "등록하기"를 클릭</p>
+              <p>✓ 등록된 링크의 "열기" 버튼으로 새 탭에서 사이트 접속</p>
+              <p>✓ 방문 횟수와 통계를 자동으로 추적</p>
+              <p>✓ 모든 데이터는 로컬에 저장되어 개인정보 보호</p>
+            </div>
           </div>
         </div>
       </div>
@@ -607,7 +739,7 @@
       const url = document.getElementById('url-link').value.trim();
 
       if (!name) {
-        showAlert('사이트 이름을 입력하세요.', 'error', 'alert-sidebar');
+        showAlert('링크 이름을 입력하세요.', 'error', 'alert-sidebar');
         return;
       }
 
@@ -637,7 +769,7 @@
       document.getElementById('url-link').value = '';
       renderUrlList();
       updateStats();
-      showAlert('사이트가 등록되었습니다.', 'success', 'alert-sidebar');
+      showAlert('링크가 등록되었습니다.', 'success', 'alert-sidebar');
     }
 
     // URL 목록 렌더링
@@ -645,16 +777,16 @@
       const container = document.getElementById('url-list-container');
 
       if (urls.length === 0) {
-        container.innerHTML = '<div class="empty-list">등록된 사이트가 없습니다.</div>';
+        container.innerHTML = '<div class="empty-list">등록된 링크가 없습니다.</div>';
         return;
       }
 
       container.innerHTML = urls.map(url => `
-        <div class="url-item ${currentUrl === url.url ? 'active' : ''}">
+        <div class="url-item">
           <div class="url-item-name">${escapeHtml(url.name)}</div>
           <div class="url-item-url">${escapeHtml(url.url)}</div>
           <div class="url-item-actions">
-            <button class="url-item-btn url-item-btn-visit" onclick="visitUrl('${escapeHtml(url.url)}')">방문</button>
+            <button class="url-item-btn url-item-btn-visit" onclick="visitUrl('${escapeHtml(url.url)}', '${escapeHtml(url.name)}')">열기</button>
             <button class="url-item-btn url-item-btn-delete" onclick="deleteUrl(${url.id})">삭제</button>
           </div>
         </div>
@@ -662,23 +794,23 @@
     }
 
     // URL 방문
-    function visitUrl(url) {
-      navigateTo(url);
+    function visitUrl(url, name) {
+      navigateTo(url, name);
     }
 
     // URL 삭제
     function deleteUrl(id) {
-      if (confirm('이 사이트를 삭제하시겠습니까?')) {
+      if (confirm('이 링크를 삭제하시겠습니까?')) {
         urls = urls.filter(u => u.id !== id);
         saveUrls();
         renderUrlList();
         updateStats();
-        showAlert('사이트가 삭제되었습니다.', 'success', 'alert-sidebar');
+        showAlert('링크가 삭제되었습니다.', 'success', 'alert-sidebar');
       }
     }
 
     // 페이지 이동
-    function navigateTo(url) {
+    function navigateTo(url, name = '') {
       if (!url) return;
 
       let fullUrl = url;
@@ -691,42 +823,56 @@
         return;
       }
 
-      // 프록시를 통해 요청
-      const proxyUrl = `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
-
-      showLoading(true);
       currentUrl = fullUrl;
       visits++;
       saveVisits();
       updateStats();
       renderUrlList();
 
-      document.getElementById('welcome-screen').style.display = 'none';
-      document.getElementById('content-frame').style.display = 'flex';
-      document.getElementById('current-title').textContent = '페이지 로드 중...';
-      document.getElementById('current-url').textContent = fullUrl;
-      document.getElementById('address-input').value = fullUrl;
-
       // 이력에 추가
-      history.push(fullUrl);
+      history.push({url: fullUrl, name: name});
       historyIndex = history.length - 1;
       updateNavButtons();
 
-      // iframe으로 로드
-      const iframe = document.getElementById('proxy-iframe');
-      iframe.src = proxyUrl;
-      iframe.onload = function() {
-        showLoading(false);
-        try {
-          document.getElementById('current-title').textContent = iframe.contentDocument?.title || '페이지';
-        } catch (e) {
-          document.getElementById('current-title').textContent = '페이지';
-        }
-      };
-      iframe.onerror = function() {
-        showLoading(false);
-        showAlert('페이지를 로드할 수 없습니다.', 'error');
-      };
+      // 콘텐츠 영역에 링크 정보 표시
+      const contentArea = document.getElementById('content-area');
+      contentArea.innerHTML = `
+        <div class="link-item-content">
+          <div class="link-item-header">
+            <div class="link-item-title">🔗 ${escapeHtml(name || '링크')}</div>
+          </div>
+          <div class="link-item-url">${escapeHtml(fullUrl)}</div>
+          <div class="link-actions">
+            <button class="link-btn link-btn-open" onclick="openInNewTab('${escapeHtml(fullUrl)}')">🌐 새 탭에서 열기</button>
+            <button class="link-btn link-btn-copy" onclick="copyToClipboard('${escapeHtml(fullUrl)}')">📋 복사</button>
+            <button class="link-btn link-btn-back" onclick="goHome()">🏠 돌아가기</button>
+          </div>
+          <div class="info-box" style="margin-top: 30px;">
+            <h3>💡 팁</h3>
+            <p>"새 탭에서 열기"를 클릭하면 해당 사이트를 직접 방문할 수 있습니다.</p>
+            <p>URL을 복사하여 다른 앱에서도 사용할 수 있습니다.</p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('current-title').textContent = name || '링크 상세';
+      document.getElementById('current-url').style.display = 'block';
+      document.getElementById('current-url').textContent = fullUrl;
+    }
+
+    // 새 탭에서 열기
+    function openInNewTab(url) {
+      window.open(url, '_blank');
+      showAlert('새 탭에서 사이트를 열었습니다.', 'success');
+    }
+
+    // 클립보드에 복사
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showAlert('URL이 복사되었습니다.', 'success');
+      }).catch(() => {
+        showAlert('복사에 실패했습니다.', 'error');
+      });
     }
 
     // 주소창 입력 처리
@@ -736,62 +882,77 @@
       }
     }
 
-    // 주소창의 URL로 이동
+    // 주소창의 입력으로 검색 또는 이동
     function navigateToAddress() {
-      const url = document.getElementById('address-input').value.trim();
-      if (url) {
-        navigateTo(url);
-      }
-    }
+      const input = document.getElementById('address-input').value.trim();
+      if (!input) return;
 
-    // 로딩 표시
-    function showLoading(show) {
-      document.getElementById('loading-spinner').style.display = show ? 'block' : 'none';
+      // 등록된 링크에서 검색
+      const found = urls.find(u => u.name.toLowerCase().includes(input.toLowerCase()));
+      if (found) {
+        navigateTo(found.url, found.name);
+        document.getElementById('address-input').value = '';
+        return;
+      }
+
+      // URL로 취급
+      navigateTo(input);
+      document.getElementById('address-input').value = '';
     }
 
     // 뒤로 가기
     function goBack() {
       if (historyIndex > 0) {
         historyIndex--;
-        navigateTo(history[historyIndex]);
+        const item = history[historyIndex];
+        navigateTo(item.url, item.name);
       }
     }
 
-    // 앞으로 가기
-    function goForward() {
-      if (historyIndex < history.length - 1) {
-        historyIndex++;
-        navigateTo(history[historyIndex]);
-      }
-    }
-
-    // 새로고침
-    function reload() {
-      if (currentUrl) {
-        document.getElementById('proxy-iframe').src = `/api/proxy?url=${encodeURIComponent(currentUrl)}`;
-        showLoading(true);
-      }
+    // 홈으로 돌아가기
+    function goHome() {
+      currentUrl = null;
+      historyIndex = -1;
+      history = [];
+      updateNavButtons();
+      document.getElementById('content-area').innerHTML = `
+        <div class="welcome-screen">
+          <div class="welcome-icon">🔗</div>
+          <div class="welcome-text">링크 우회 브라우저</div>
+          <div class="welcome-hint">
+            왼쪽 사이드바에서 링크를 등록하고 관리하세요.<br>
+            등록된 링크를 클릭하면 새 탭에서 사이트가 열립니다.
+          </div>
+          <div class="info-box">
+            <h3>📌 사용 방법</h3>
+            <p>✓ 링크 이름과 URL을 입력하고 "등록하기"를 클릭</p>
+            <p>✓ 등록된 링크의 "열기" 버튼으로 새 탭에서 사이트 접속</p>
+            <p>✓ 방문 횟수와 통계를 자동으로 추적</p>
+            <p>✓ 모든 데이터는 로컬에 저장되어 개인정보 보호</p>
+          </div>
+        </div>
+      `;
+      document.getElementById('current-title').textContent = '링크 관리 시스템';
+      document.getElementById('current-url').style.display = 'none';
+      document.getElementById('address-input').value = '';
     }
 
     // 네비게이션 버튼 업데이트
     function updateNavButtons() {
       document.getElementById('back-btn').disabled = historyIndex <= 0;
-      document.getElementById('forward-btn').disabled = historyIndex >= history.length - 1;
     }
 
     // 캐시 지우기
     function clearCache() {
-      if (confirm('정말 캐시를 지우시겠습니까?')) {
+      if (confirm('정말 모든 데이터를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.')) {
         localStorage.clear();
         location.reload();
       }
     }
 
-    // 외부에서 열기
-    function openExternal() {
-      if (currentUrl) {
-        window.open(currentUrl, '_blank');
-      }
+    // 설정 표시
+    function showSettings() {
+      showAlert('⚙️ 설정: GitHub Pages에서는 기본 설정만 제공됩니다. 로컬에서 실행하면 더 많은 기능을 사용할 수 있습니다.', 'info');
     }
 
     // 통계 업데이트
@@ -803,14 +964,15 @@
     // 알림 표시
     function showAlert(message, type, containerId = 'alert-top') {
       const alertId = containerId === 'alert-sidebar' ? 'alert-sidebar' : 'alert-top';
-      const container = document.getElementById(alertId);
+      let container = document.getElementById(alertId);
       
       if (!container) {
         const newAlert = document.createElement('div');
         newAlert.id = alertId;
         newAlert.className = `alert alert-${type} show`;
         newAlert.textContent = message;
-        document.querySelector('.top-bar')?.appendChild(newAlert);
+        document.body.appendChild(newAlert);
+        container = newAlert;
       } else {
         container.className = `alert alert-${type} show`;
         container.textContent = message;
